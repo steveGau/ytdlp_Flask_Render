@@ -8,7 +8,11 @@ app.secret_key = 'your_secret_key'  # Needed for flashing messages
 
 def download_video(url):
     try:
-        coder_path = '.\yt-dlp.exe '
+        # coder_path = 'yt-dlp '
+        # coder_path = 'yt-dlp.exe '
+        # coder_path = '.\yt-dlp.exe '
+        # coder_path = './yt-dlp.exe '
+        coder_path = 'yt-dlp '
         best = ' -f bv*+ba '
         best = ' '
         youtube = coder_path + best
