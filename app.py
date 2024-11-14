@@ -11,6 +11,7 @@ def download_video(url):
         best=' '
         youtube=coder_path+best
         print(youtube+url)
+        print(os.path.abspath(coder_path + best))
         # Create 'downloadVideos' directory if it doesn't exist
         if not os.path.exists('downloadVideos'):
             os.makedirs('downloadVideos')   
