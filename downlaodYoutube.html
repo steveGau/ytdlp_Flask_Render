@@ -1,46 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Downloader</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouTube Video Downloader</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f4f4f4;
+    }
+    .container {
+      text-align: center;
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    input[type="text"] {
+      width: 80%;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 16px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
 </head>
 <body>
-    <h1>Video Downloader</h1>
-    <form id="downloadForm">
-        <label for="url">Enter Video URL:</label>
-        <input type="text" id="url" name="url" required>
-        <button type="submit">Download</button>
-    </form>
-    <pre id="output"></pre>
-    
-    <!-- Embed the JavaScript code directly into the HTML file -->
-    <script>
-        // Ensure the required Node.js modules are available
-        const YTDlpWrap = require('yt-dlp-wrap').default;
+  <div class="container">
+    <h2>YouTube Video Downloader</h2>
+    <input type="text" id="videoUrl" placeholder="Enter YouTube URL">
+    <button onclick="downloadVideo()">Download Video</button>
+    <p id="message"></p>
+  </div>
 
-        document.getElementById('downloadForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            
-            const url = document.getElementById('url').value;
-            const outputElement = document.getElementById('output');
-            
-            const ytDlpWrap = new YTDlpWrap();
-            
-            ytDlpWrap.exec([url, '-f', 'best', '-o', 'output.mp4'])
-                .on('progress', (progress) => {
-                    outputElement.textContent = `Progress: ${progress.percent}% - Downloaded: ${progress.totalSize} - Speed: ${progress.currentSpeed} - ETA: ${progress.eta}`;
-                })
-                .on('ytDlpEvent', (eventType, eventData) => {
-                    outputElement.textContent += `\nEvent: ${eventType} - Data: ${eventData}`;
-                })
-                .on('error', (error) => {
-                    outputElement.textContent += `\nError: ${error}`;
-                })
-                .on('close', () => {
-                    outputElement.textContent += '\nDownload complete';
-                });
+  <script>
+    async function downloadVideo() {
+      const url = document.getElementById('videoUrl').value;
+      if (!url) {
+        document.getElementById('message').textContent = "Please enter a YouTube URL.";
+        return;
+      }
+
+      document.getElementById('message').textContent = "Processing...";
+
+      try {
+        const response = await fetch('/download', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ url })
         });
-    </script>
+
+        if (response.ok) {
+          const blob = await response.blob();
+          const downloadUrl = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = downloadUrl;
+          a.download = "video.mp4";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(downloadUrl);
+          document.getElementById('message').textContent = "Download started!";
+        } else {
+          document.getElementById('message').textContent = "Error: Could not download video.";
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        document.getElementById('message').textContent = "An error occurred while downloading.";
+      }
+    }
+  </script>
 </body>
 </html>
