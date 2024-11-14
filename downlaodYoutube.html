@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Downloader</title>
+</head>
+<body>
+    <h1>Video Downloader</h1>
+    <form id="downloadForm">
+        <label for="url">Enter Video URL:</label>
+        <input type="text" id="url" name="url" required>
+        <button type="submit">Download</button>
+    </form>
+    <pre id="output"></pre>
+    
+    <!-- Embed the JavaScript code directly into the HTML file -->
+    <script>
+        // Ensure the required Node.js modules are available
+        const YTDlpWrap = require('yt-dlp-wrap').default;
+
+        document.getElementById('downloadForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const url = document.getElementById('url').value;
+            const outputElement = document.getElementById('output');
+            
+            const ytDlpWrap = new YTDlpWrap();
+            
+            ytDlpWrap.exec([url, '-f', 'best', '-o', 'output.mp4'])
+                .on('progress', (progress) => {
+                    outputElement.textContent = `Progress: ${progress.percent}% - Downloaded: ${progress.totalSize} - Speed: ${progress.currentSpeed} - ETA: ${progress.eta}`;
+                })
+                .on('ytDlpEvent', (eventType, eventData) => {
+                    outputElement.textContent += `\nEvent: ${eventType} - Data: ${eventData}`;
+                })
+                .on('error', (error) => {
+                    outputElement.textContent += `\nError: ${error}`;
+                })
+                .on('close', () => {
+                    outputElement.textContent += '\nDownload complete';
+                });
+        });
+    </script>
+</body>
+</html>
