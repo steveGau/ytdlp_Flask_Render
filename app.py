@@ -19,7 +19,8 @@ def download_video(url):
 
         # Construct the full command with the output directory
         # command = youtube + url + f' -o {target_dir}/%(title)s.%(ext)s'
-        command = youtube + url + f' -o {target_dir}/%(title)s.%(ext)s'        
+        # command = youtube + url + f' -o {target_dir}'   
+        command = youtube + url + ' -o ' + target_dir
         print(f'Executing command: {command}')
         
         # Run the command using subprocess
