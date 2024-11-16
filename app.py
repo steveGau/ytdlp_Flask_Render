@@ -1,49 +1,35 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory
 import os
-import subprocess
-from pathlib import Path
+import yt_dlp
+import uuid
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Needed for flashing messages
 
+# Define a temporary folder for storing downloaded videos
+TEMP_FOLDER = 'temp_downloads'
+if not os.path.exists(TEMP_FOLDER):
+    os.makedirs(TEMP_FOLDER)
+
 def download_video(url):
     try:
-        # coder_path = 'yt-dlp '
-        # coder_path = 'yt-dlp.exe '
-        # coder_path = 'yt-dlp.exe'
-        # coder_path = '.\yt-dlp.exe '
-        # coder_path = './yt-dlp.exe '
-        coder_path = 'yt-dlp.exe'
-        best = ' -f bv*+ba '
-        best = ' '
-        youtube = coder_path + best
-        print(youtube + url)
+        # Generate a unique filename for the video
+        unique_filename = f"{uuid.uuid4()}.%(ext)s"
+        output_path = os.path.join(TEMP_FOLDER, unique_filename)
         
-        # Get the default Downloads directory for the current user
-        target_dir = str(Path.home() / "Downloads")
+        ydl_opts = {
+            'outtmpl': output_path,
+        }
 
-        # Construct the full command with the output directory
-        # command = youtube + url + f' -o {target_dir}/%(title)s.%(ext)s'
-        # command = youtube + url + f' -o {target_dir}'   
-        command = youtube + url + ' -o ' + target_dir
-        print(f'Executing command: {command}')
-        
-        # Run the command using subprocess
-        # result = subprocess.run(command, shell=True, capture_output=True, text=True)
-        result = subprocess.run([coder_path, url], capture_output=True, text=True)
-        if result.returncode == 0:
-            flash("Video downloaded successfully.", "success")
-            # Print the directory where the video is downloaded
-            flash(f"Video is saved in: {os.path.abspath(target_dir)}")
-            # flash(f"Video is saved in: {os.path.abspath(target_dir)}", "info")
-            # print(f"Video is saved in: {os.path.abspath(target_dir)}")
-        else:
-            flash(f"An error occurred: {result.stderr}", "error")
-            print(f"Error: {result.stderr}")
-    
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([url])
+
+        flash("Video downloaded successfully. Ready for download.", "success")
+        # Return the actual file path to serve later
+        return output_path.rsplit('/', 1)[-1]
     except Exception as e:
         flash(f"An error occurred: {e}", "error")
-        print(f"Exception: {e}")
+        return None
 
 @app.route('/')
 def index():
@@ -52,99 +38,38 @@ def index():
 @app.route('/download', methods=['POST'])
 def download():
     url = request.form['url']
-    # Try removing the &t= part of the URL if present
     if '&' in url:
         url = url.split('&')[0]
-    download_video(url)
+
+    downloaded_file = download_video(url)
+    if downloaded_file:
+        return redirect(url_for('serve_file', filename=downloaded_file))
     return redirect(url_for('index'))
 
-if __name__ == '__main__':
-    app.run(debug=True)
-
-
-'''
-from flask import Flask, render_template, request, redirect, url_for, flash
-import os
-import subprocess
-from pathlib import Path
-
-app = Flask(__name__)
-app.secret_key = 'your_secret_key'  # Needed for flashing messages
-
-def download_video(url):
+@app.route('/serve/<filename>')
+def serve_file(filename):
     try:
-        coder_path = 'yt-dlp '
-        best = ' -f bv*+ba '
-        best = ' '
-        youtube = coder_path + best
-        print(youtube + url)
-        
-        # Get the default Downloads directory for the current user
-        download_dir = str(Path.home() / "Downloads")
-        
-        # Create 'downloadVideos' directory within Downloads if it doesn't exist
-        target_dir = os.path.join(download_dir, 'downloadVideos')
-        if not os.path.exists(target_dir):
-            os.makedirs(target_dir)
-        
-        # Construct the full command with the output directory
-        command = youtube + url + f' -o {target_dir}/%(title)s.%(ext)s'
-        print(f'Executing command: {command}')
-        
-        # Run the command using subprocess
-        result = subprocess.run(command, shell=True, capture_output=True, text=True)
-        
-        if result.returncode == 0:
-            flash("Video downloaded successfully.", "success")
-            
-            # Print the directory where the video is downloaded
-            flash(f"Video is saved in: {os.path.abspath(target_dir)}", "info")
-            print(f"Video is saved in: {os.path.abspath(target_dir)}")
-        else:
-            flash(f"An error occurred: {result.stderr}", "error")
-            print(f"Error: {result.stderr}")
-    
+        return send_from_directory(TEMP_FOLDER, filename, as_attachment=True)
     except Exception as e:
-        flash(f"An error occurred: {e}", "error")
-        print(f"Exception: {e}")
-
-@app.route('/')
-def index():
-    return render_template('index.html')
-
-@app.route('/download', methods=['POST'])
-def download():
-    url = request.form['url']
-    # Try removing the &t= part of the URL if present
-    if '&' in url:
-        url = url.split('&')[0]
-    download_video(url)
-    return redirect(url_for('index'))
+        flash(f"Error serving file: {e}", "error")
+        return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run(debug=True)
-'''
+
 
 '''
 from flask import Flask, render_template, request, redirect, url_for, flash
 import os
-import subprocess
+import yt_dlp
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Needed for flashing messages
 
 def download_video(url):
     try:
-        # coder_path ='yt-dlp.exe '
-        coder_path ='yt-dlp '
-        best=' -f bv*+ba '
-        best=' '
-        youtube=coder_path+best
-        print(youtube+url)
-        print(os.path.abspath(coder_path + best))
-        # Create 'downloadVideos' directory if it doesn't exist
-        # if not os.path.exists('downloadVideos'):
-        #     os.makedirs('downloadVideos')   
-        subprocess.run(youtube+url, shell=True)  # Execute the line using subprocess
+        flash("Turn Off VPN")
+        with yt_dlp.YoutubeDL() as ydl:  # No options specified
+            ydl.download([url])
         flash("Video downloaded successfully.", "success")
     except Exception as e:
         flash(f"An error occurred: {e}", "error")
