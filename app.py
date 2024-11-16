@@ -2,7 +2,6 @@ from flask import Flask, render_template, request, redirect, url_for, flash, sen
 import os
 import uuid
 import subprocess
-from pathlib import Path
 import logging
 
 # Configure logging
@@ -21,12 +20,12 @@ except OSError as e:
     logger.error(f"Error creating directory {DOWNLOAD_DIR}: {e}")
     raise
 
-# Path to yt_dlp.exe
+# Path to yt-dlp binary (Linux version)
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-YTDLP_PATH = os.path.join(BASE_DIR, 'yt-dlp')  # Ensure yt_dlp.exe is in the same directory as this script
+YTDLP_PATH = os.path.join(BASE_DIR, 'yt-dlp')  # Ensure yt-dlp is in the same directory
 
 def download_video(url):
-    """Download video using yt_dlp.exe and return the filename."""
+    """Download video using yt-dlp binary and return the filename."""
     try:
         # Generate a unique filename to avoid conflicts
         unique_id = str(uuid.uuid4())
