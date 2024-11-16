@@ -13,19 +13,18 @@ if not os.path.exists(TEMP_FOLDER):
 
 def download_video(url):
     try:
-        # Generate a unique filename for the video
         unique_filename = f"{uuid.uuid4()}.%(ext)s"
         output_path = os.path.join(TEMP_FOLDER, unique_filename)
-        
+
         ydl_opts = {
             'outtmpl': output_path,
+            'cookiefile': 'cookies.txt',  # Use YouTube cookies for authentication
         }
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
 
         flash("Video downloaded successfully. Ready for download.", "success")
-        # Return the actual file path to serve later
         return output_path.rsplit('/', 1)[-1]
     except Exception as e:
         flash(f"An error occurred: {e}", "error")
