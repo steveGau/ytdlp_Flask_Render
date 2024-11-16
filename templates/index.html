@@ -3,24 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Video Downloader: Turn Off VPN</title>
+    <title>Video Downloader</title>
 </head>
 <body>
-    <h1>YouTube Video Downloader: Turn Off VPN</h1>
-    <form action="{{ url_for('download') }}" method="post">
-        <label for="url">Enter the URL of the YouTube video:</label>
-        <input type="text" id="url" name="url" required>
-        <button type="submit">Download Video</button>
+    <h1>Download Video</h1>
+    <form method="post" action="/download">
+        <input type="text" name="url" placeholder="Enter video URL" required>
+        <button type="submit">Download</button>
     </form>
-
     {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <ul>
-          {% for category, message in messages %}
-            <li class="{{ category }}">{{ message }}</li>
-          {% endfor %}
-        </ul>
-      {% endif %}
+        {% if messages %}
+            <ul>
+            {% for category, message in messages %}
+                <li class="{{ category }}">{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
     {% endwith %}
 </body>
 </html>
